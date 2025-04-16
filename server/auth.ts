@@ -30,7 +30,7 @@ async function comparePasswords(supplied: string, stored: string) {
 
 // Crée un utilisateur administrateur si celui-ci n'existe pas
 async function createAdminUserIfNotExists() {
-  const adminUsername = "admin";
+  const adminUsername = "Admin";
   const existingAdmin = await storage.getUserByUsername(adminUsername);
   
   if (!existingAdmin) {

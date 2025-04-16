@@ -6,22 +6,26 @@ import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
 import AdminPage from "@/pages/admin-page";
 import AuthPage from "@/pages/auth-page";
+import AdminLoginPage from "@/pages/admin-login-page";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
+import { AdminRoute } from "@/lib/admin-middleware";
+import { AdminLayout } from "@/components/admin/admin-layout";
 
-function Layout({ children }: { children: React.ReactNode }) {
+// Layout pour la partie publique
+function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="bg-primary text-primary-foreground">
+    <div className="min-h-screen bg-zinc-900 text-zinc-100">
+      <nav className="bg-zinc-800 text-zinc-100">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="text-xl font-bold">
             Music Videos
           </Link>
           <div className="flex gap-4">
-            <Link href="/admin" className="hover:text-primary-foreground/80">
+            <Link href="/admin/login" className="hover:text-zinc-300">
               Admin
             </Link>
-            <Link href="/auth" className="hover:text-primary-foreground/80">
+            <Link href="/auth" className="hover:text-zinc-300">
               Login
             </Link>
           </div>
@@ -34,14 +38,36 @@ function Layout({ children }: { children: React.ReactNode }) {
 
 function Router() {
   return (
-    <Layout>
-      <Switch>
-        <Route path="/" component={HomePage} />
-        <ProtectedRoute path="/admin" component={AdminPage} />
-        <Route path="/auth" component={AuthPage} />
-        <Route component={NotFound} />
-      </Switch>
-    </Layout>
+    <Switch>
+      {/* Routes publiques avec le layout public */}
+      <Route path="/">
+        <PublicLayout>
+          <HomePage />
+        </PublicLayout>
+      </Route>
+      <Route path="/auth">
+        <PublicLayout>
+          <AuthPage />
+        </PublicLayout>
+      </Route>
+      
+      {/* Routes d'administration */}
+      <Route path="/admin/login" component={AdminLoginPage} />
+      <Route path="/admin">
+        <AdminRoute>
+          <AdminLayout>
+            <AdminPage />
+          </AdminLayout>
+        </AdminRoute>
+      </Route>
+      
+      {/* Page d'erreur 404 */}
+      <Route>
+        <PublicLayout>
+          <NotFound />
+        </PublicLayout>
+      </Route>
+    </Switch>
   );
 }
 
