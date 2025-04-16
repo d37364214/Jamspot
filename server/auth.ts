@@ -30,18 +30,29 @@ async function comparePasswords(supplied: string, stored: string) {
 
 // Crée un utilisateur administrateur si celui-ci n'existe pas
 async function createAdminUserIfNotExists() {
-  const adminUsername = "Admin";
-  const existingAdmin = await storage.getUserByUsername(adminUsername);
-  
-  if (!existingAdmin) {
-    console.log("Création du compte administrateur par défaut");
-    const hashedPassword = await hashPassword("admin");
-    await storage.createUser({
-      username: adminUsername,
-      password: hashedPassword,
-      isAdmin: true
-    });
-    console.log("Compte administrateur créé avec succès");
+  try {
+    const adminUsername = "Admin";
+    console.log("Vérification de l'existence du compte administrateur:", adminUsername);
+    
+    const existingAdmin = await storage.getUserByUsername(adminUsername);
+    
+    if (!existingAdmin) {
+      console.log("Création du compte administrateur par défaut");
+      const hashedPassword = await hashPassword("admin");
+      const admin = await storage.createUser({
+        username: adminUsername,
+        password: hashedPassword,
+        isAdmin: true
+      });
+      console.log("Compte administrateur créé avec succès:", admin);
+      return admin;
+    } else {
+      console.log("Compte administrateur existant trouvé:", existingAdmin.username);
+      return existingAdmin;
+    }
+  } catch (error) {
+    console.error("Erreur lors de la création du compte administrateur:", error);
+    throw error;
   }
 }
 
@@ -96,8 +107,29 @@ export function setupAuth(app: Express) {
     });
   });
 
-  app.post("/api/login", passport.authenticate("local"), (req, res) => {
-    res.status(200).json(req.user);
+  app.post("/api/login", (req, res, next) => {
+    console.log("Tentative de connexion pour l'utilisateur:", req.body.username);
+    
+    passport.authenticate("local", (err: any, user: Express.User | false, info: any) => {
+      if (err) {
+        console.error("Erreur d'authentification:", err);
+        return next(err);
+      }
+      
+      if (!user) {
+        console.error("Échec d'authentification pour l'utilisateur:", req.body.username);
+        return res.status(401).json({ message: "Identifiants invalides" });
+      }
+      
+      req.login(user, (err) => {
+        if (err) {
+          console.error("Erreur lors de la connexion:", err);
+          return next(err);
+        }
+        console.log("Utilisateur connecté avec succès:", user.username);
+        return res.status(200).json(user);
+      });
+    })(req, res, next);
   });
 
   app.post("/api/logout", (req, res, next) => {

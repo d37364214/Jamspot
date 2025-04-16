@@ -17,7 +17,7 @@ export default function AdminLoginPage() {
   const loginForm = useForm({
     resolver: zodResolver(insertUserSchema.pick({ username: true, password: true })),
     defaultValues: {
-      username: "",
+      username: "Admin",
       password: "",
     },
   });
