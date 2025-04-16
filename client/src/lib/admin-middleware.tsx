@@ -1,7 +1,7 @@
-import { ReactNode } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { Redirect } from "wouter";
 import { Loader2 } from "lucide-react";
+import { Redirect, useLocation } from "wouter";
+import { ReactNode } from "react";
 
 /**
  * AdminRoute - Un composant qui vérifie si l'utilisateur est authentifié et est admin
@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
  */
 export function AdminRoute({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
 
   if (isLoading) {
     return (
@@ -18,9 +19,9 @@ export function AdminRoute({ children }: { children: ReactNode }) {
     );
   }
 
-  // Vérifier si l'utilisateur est connecté et a le rôle d'administrateur
+  // Vérifier si l'utilisateur est authentifié et est administrateur
   if (!user || !user.isAdmin) {
-    return <Redirect to="/admin/login" />;
+    return <Redirect to="/admin-login" />;
   }
 
   return <>{children}</>;

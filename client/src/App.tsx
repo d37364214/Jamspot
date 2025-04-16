@@ -4,9 +4,11 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
-import AdminPage from "@/pages/admin-page";
 import AuthPage from "@/pages/auth-page";
 import AdminLoginPage from "@/pages/admin-login-page";
+import DashboardPage from "@/pages/admin/dashboard-page";
+import CategoriesPage from "@/pages/admin/categories-page";
+import VideosPage from "@/pages/admin/videos-page";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { AdminRoute } from "@/lib/admin-middleware";
@@ -51,15 +53,35 @@ function Router() {
         </PublicLayout>
       </Route>
       
-      {/* Routes d'administration */}
-      <Route path="/admin/login" component={AdminLoginPage} />
+      {/* Route de connexion admin (accessible sans être connecté) */}
+      <Route path="/admin-login" component={AdminLoginPage} />
+      
+      {/* Routes d'administration protégées */}
       <Route path="/admin">
         <AdminRoute>
           <AdminLayout>
-            <AdminPage />
+            <DashboardPage />
           </AdminLayout>
         </AdminRoute>
       </Route>
+      
+      <Route path="/admin/videos">
+        <AdminRoute>
+          <AdminLayout>
+            <VideosPage />
+          </AdminLayout>
+        </AdminRoute>
+      </Route>
+      
+      <Route path="/admin/categories">
+        <AdminRoute>
+          <AdminLayout>
+            <CategoriesPage />
+          </AdminLayout>
+        </AdminRoute>
+      </Route>
+      
+      {/* Autres routes admin à ajouter ici */}
       
       {/* Page d'erreur 404 */}
       <Route>
