@@ -1,11 +1,8 @@
 import { User, InsertUser, Category, InsertCategory, Video, InsertVideo } from "@shared/schema";
 import session from "express-session";
-import connectPg from "connect-pg-simple";
-import { db } from "./db";
-import { eq } from "drizzle-orm";
-import { users, categories, videos } from "@shared/schema";
+import createMemoryStore from "memorystore";
 
-const PostgresSessionStore = connectPg(session);
+const MemoryStore = createMemoryStore(session);
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -18,54 +15,66 @@ export interface IStorage {
   sessionStore: session.Store;
 }
 
-export class DatabaseStorage implements IStorage {
+export class MemStorage implements IStorage {
+  private users: User[] = [];
+  private videos: Video[] = [];
+  private categories: Category[] = [];
+  private userIdCounter = 1;
+  private videoIdCounter = 1;
+  private categoryIdCounter = 1;
   sessionStore: session.Store;
 
   constructor() {
-    if (!process.env.DATABASE_URL) {
-      throw new Error("DATABASE_URL environment variable is required");
-    }
-
-    this.sessionStore = new PostgresSessionStore({
-      conObject: {
-        connectionString: process.env.DATABASE_URL,
-      },
-      createTableIfMissing: true,
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000, // prune expired entries every 24h
     });
   }
 
   async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+    return this.users.find(user => user.id === id);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user;
+    return this.users.find(user => user.username === username);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
-    return user;
+    const newUser: User = {
+      ...insertUser,
+      id: this.userIdCounter++,
+      isAdmin: false,
+    };
+    this.users.push(newUser);
+    return newUser;
   }
 
   async getVideos(): Promise<Video[]> {
-    return await db.select().from(videos);
+    return this.videos;
   }
 
   async createVideo(insertVideo: InsertVideo): Promise<Video> {
-    const [video] = await db.insert(videos).values(insertVideo).returning();
-    return video;
+    const now = new Date();
+    const newVideo: Video = {
+      ...insertVideo,
+      id: this.videoIdCounter++,
+      createdAt: now,
+    };
+    this.videos.push(newVideo);
+    return newVideo;
   }
 
   async getCategories(): Promise<Category[]> {
-    return await db.select().from(categories);
+    return this.categories;
   }
 
   async createCategory(insertCategory: InsertCategory): Promise<Category> {
-    const [category] = await db.insert(categories).values(insertCategory).returning();
-    return category;
+    const newCategory: Category = {
+      ...insertCategory,
+      id: this.categoryIdCounter++,
+    };
+    this.categories.push(newCategory);
+    return newCategory;
   }
 }
 
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();
