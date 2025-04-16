@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -12,12 +13,8 @@ import { useLocation } from "wouter";
 export default function AuthPage() {
   const { loginMutation, registerMutation, user } = useAuth();
   const [, setLocation] = useLocation();
-
-  if (user) {
-    setLocation("/");
-    return null;
-  }
-
+  
+  // Déplacer tous les hooks avant toute condition
   const loginForm = useForm({
     resolver: zodResolver(insertUserSchema),
     defaultValues: {
@@ -33,6 +30,18 @@ export default function AuthPage() {
       password: "",
     },
   });
+  
+  // Effectuer la redirection après tous les appels de hooks
+  useEffect(() => {
+    if (user) {
+      setLocation("/");
+    }
+  }, [user, setLocation]);
+  
+  // Si l'utilisateur est déjà connecté, on peut retourner null après tous les hooks
+  if (user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen grid md:grid-cols-2">
