@@ -45,24 +45,24 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen grid md:grid-cols-2">
-      <div className="bg-primary p-8 text-primary-foreground hidden md:flex flex-col justify-center">
+      <div className="bg-zinc-800 p-8 text-zinc-100 hidden md:flex flex-col justify-center">
         <h1 className="text-4xl font-bold mb-4">Music Video Platform</h1>
         <p className="text-xl">
-          Share and discover amazing music videos across different categories.
+          Découvrez et partagez des vidéos musicales éducatives.
         </p>
       </div>
 
       <div className="flex items-center justify-center p-8">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md bg-zinc-800 text-zinc-100 border-zinc-700">
           <CardHeader>
-            <CardTitle>Welcome</CardTitle>
-            <CardDescription>Login or create an account to continue</CardDescription>
+            <CardTitle>Espace Membre</CardTitle>
+            <CardDescription className="text-zinc-400">Connectez-vous ou créez un compte pour continuer</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="register">Register</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 bg-zinc-700">
+                <TabsTrigger value="login" className="data-[state=active]:bg-zinc-600">Connexion</TabsTrigger>
+                <TabsTrigger value="register" className="data-[state=active]:bg-zinc-600">Inscription</TabsTrigger>
               </TabsList>
               
               <TabsContent value="login">
@@ -73,7 +73,7 @@ export default function AuthPage() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel>Identifiant</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -93,7 +93,7 @@ export default function AuthPage() {
                       )}
                     />
                     <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
-                      Login
+                      Connexion
                     </Button>
                   </form>
                 </Form>
@@ -107,7 +107,7 @@ export default function AuthPage() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel>Identifiant</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -127,7 +127,7 @@ export default function AuthPage() {
                       )}
                     />
                     <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
-                      Register
+                      Inscription
                     </Button>
                   </form>
                 </Form>
