@@ -1,19 +1,30 @@
-import * as React from "react"
+import { useState, useEffect } from "react";
 
-const MOBILE_BREAKPOINT = 768
+export function useIsMobile(breakpoint = 768) {
+  // Détecter si le navigateur est disponible
+  const isBrowser = typeof window !== "undefined";
+  
+  // État initial basé sur la largeur de l'écran
+  const [isMobile, setIsMobile] = useState(
+    isBrowser ? window.innerWidth < breakpoint : false
+  );
 
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+  useEffect(() => {
+    if (!isBrowser) return;
 
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    // Fonction pour mettre à jour l'état lors du redimensionnement de la fenêtre
+    function handleResize() {
+      setIsMobile(window.innerWidth < breakpoint);
     }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
-  }, [])
 
-  return !!isMobile
+    // Ajouter un écouteur d'événement pour le redimensionnement
+    window.addEventListener("resize", handleResize);
+    
+    // Nettoyer l'écouteur lors du démontage du composant
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [breakpoint, isBrowser]);
+
+  return isMobile;
 }

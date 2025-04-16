@@ -24,7 +24,7 @@ function PublicLayout({ children }: { children: React.ReactNode }) {
             Music Videos
           </Link>
           <div className="flex gap-4">
-            <Link href="/admin/login" className="hover:text-zinc-300">
+            <Link href="/admin-login" className="hover:text-zinc-300">
               Admin
             </Link>
             <Link href="/auth" className="hover:text-zinc-300">
