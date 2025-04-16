@@ -1,6 +1,9 @@
 import { User, InsertUser, Category, InsertCategory, Video, InsertVideo } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import { db } from "./db";
+import { users, categories, videos } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 const MemoryStore = createMemoryStore(session);
 
@@ -15,66 +18,55 @@ export interface IStorage {
   sessionStore: session.Store;
 }
 
-export class MemStorage implements IStorage {
-  private users: User[] = [];
-  private videos: Video[] = [];
-  private categories: Category[] = [];
-  private userIdCounter = 1;
-  private videoIdCounter = 1;
-  private categoryIdCounter = 1;
+export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
-
+  
   constructor() {
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000, // prune expired entries every 24h
     });
+    // Tables are already created in db.ts
   }
 
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.find(user => user.id === id);
+    const result = await db.select().from(users).where(eq(users.id, id));
+    return result[0];
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return this.users.find(user => user.username === username);
+    const result = await db.select().from(users).where(eq(users.username, username));
+    return result[0];
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const newUser: User = {
+    const result = await db.insert(users).values({
       ...insertUser,
-      id: this.userIdCounter++,
       isAdmin: false,
-    };
-    this.users.push(newUser);
-    return newUser;
+    }).returning();
+    return result[0];
   }
 
   async getVideos(): Promise<Video[]> {
-    return this.videos;
+    return await db.select().from(videos);
   }
 
   async createVideo(insertVideo: InsertVideo): Promise<Video> {
-    const now = new Date();
-    const newVideo: Video = {
+    const now = new Date().toISOString();
+    const result = await db.insert(videos).values({
       ...insertVideo,
-      id: this.videoIdCounter++,
       createdAt: now,
-    };
-    this.videos.push(newVideo);
-    return newVideo;
+    }).returning();
+    return result[0];
   }
 
   async getCategories(): Promise<Category[]> {
-    return this.categories;
+    return await db.select().from(categories);
   }
 
   async createCategory(insertCategory: InsertCategory): Promise<Category> {
-    const newCategory: Category = {
-      ...insertCategory,
-      id: this.categoryIdCounter++,
-    };
-    this.categories.push(newCategory);
-    return newCategory;
+    const result = await db.insert(categories).values(insertCategory).returning();
+    return result[0];
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
