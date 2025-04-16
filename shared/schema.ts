@@ -27,6 +27,7 @@ export const videos = sqliteTable("videos", {
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  isAdmin: true,
 });
 
 export const insertCategorySchema = createInsertSchema(categories);

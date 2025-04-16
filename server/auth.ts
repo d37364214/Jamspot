@@ -28,7 +28,28 @@ async function comparePasswords(supplied: string, stored: string) {
   return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
+// Crée un utilisateur administrateur si celui-ci n'existe pas
+async function createAdminUserIfNotExists() {
+  const adminUsername = "admin";
+  const existingAdmin = await storage.getUserByUsername(adminUsername);
+  
+  if (!existingAdmin) {
+    console.log("Création du compte administrateur par défaut");
+    const hashedPassword = await hashPassword("admin");
+    await storage.createUser({
+      username: adminUsername,
+      password: hashedPassword,
+      isAdmin: true
+    });
+    console.log("Compte administrateur créé avec succès");
+  }
+}
+
 export function setupAuth(app: Express) {
+  // Création de l'administrateur par défaut
+  createAdminUserIfNotExists().catch(err => {
+    console.error("Erreur lors de la création du compte admin:", err);
+  });
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET!,
     resave: false,

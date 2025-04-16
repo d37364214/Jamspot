@@ -10,7 +10,7 @@ const MemoryStore = createMemoryStore(session);
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  createUser(user: InsertUser & { isAdmin?: boolean }): Promise<User>;
   getVideos(): Promise<Video[]>;
   createVideo(video: InsertVideo): Promise<Video>;
   getCategories(): Promise<Category[]>;
@@ -38,10 +38,10 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async createUser(insertUser: InsertUser & { isAdmin?: boolean }): Promise<User> {
     const result = await db.insert(users).values({
       ...insertUser,
-      isAdmin: false,
+      isAdmin: insertUser.isAdmin ?? false,
     }).returning();
     return result[0];
   }
