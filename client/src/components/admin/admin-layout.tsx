@@ -47,6 +47,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   const menuItems = [
     { path: "/admin", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
     { path: "/admin/videos", icon: <VideoIcon size={18} />, label: "Vidéos" },
+    { path: "/admin/import-videos", icon: <VideoIcon size={18} />, label: "Import de vidéos" },
     { path: "/admin/categories", icon: <FolderIcon size={18} />, label: "Catégories" },
     { path: "/admin/tags", icon: <TagIcon size={18} />, label: "Tags" },
     { path: "/admin/users", icon: <UsersIcon size={18} />, label: "Utilisateurs" },
