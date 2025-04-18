@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 app.use(express.json());
+app.use(requestLogger);
 app.use(express.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {

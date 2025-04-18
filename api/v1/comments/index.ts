@@ -1,8 +1,8 @@
 
-import type { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { z } from 'zod';
 import { storage } from '../../../server/storage';
-import { success, error, handleZodError, handleError } from '../../../shared/services/response';
+import { sendSuccess, sendError, handleZodError, handleServerError } from '../../../shared/services/response';
 import { requireAuth, rateLimit } from '../../../shared/services/middleware';
 
 const COMMENT_COOLDOWN = 30000; // 30 secondes entre les commentaires
@@ -12,52 +12,56 @@ const createCommentSchema = z.object({
   content: z.string()
     .min(1, "Le commentaire ne peut pas être vide")
     .max(1000, "Le commentaire est trop long")
+    .trim()
 });
 
 export default async function handler(req: Request, res: Response) {
-  if (!req.isAuthenticated()) {
-    return res.status(401).json(error("Vous devez être connecté pour commenter"));
-  }
-
   try {
     if (req.method === 'GET') {
       const videoId = parseInt(req.query.videoId as string);
       if (isNaN(videoId)) {
-        return res.status(400).json(error("ID de vidéo invalide"));
+        return sendError(res, "ID de vidéo invalide");
       }
 
       const comments = await storage.getVideoComments(videoId);
-      return res.status(200).json(success(comments));
+      return sendSuccess(res, comments);
 
     } else if (req.method === 'POST') {
-      const validation = createCommentSchema.safeParse(req.body);
-      
-      if (!validation.success) {
-        return res.status(400).json(handleZodError(validation.error));
+      // Vérifie l'authentification
+      if (!req.isAuthenticated()) {
+        return sendError(res, "Non authentifié", undefined, 401);
       }
 
-      // Vérification anti-spam
+      // Valide les données
+      const validation = createCommentSchema.safeParse(req.body);
+      if (!validation.success) {
+        return handleZodError(res, validation.error);
+      }
+
+      // Vérifie le cooldown
       const lastComment = await storage.getLastUserComment(req.user.id);
       if (lastComment) {
         const timeSinceLastComment = Date.now() - new Date(lastComment.createdAt).getTime();
         if (timeSinceLastComment < COMMENT_COOLDOWN) {
-          return res.status(429).json(error(
+          return sendError(res, 
             "Veuillez attendre avant de poster un nouveau commentaire",
-            { waitTime: Math.ceil((COMMENT_COOLDOWN - timeSinceLastComment) / 1000) }
-          ));
+            { waitTime: Math.ceil((COMMENT_COOLDOWN - timeSinceLastComment) / 1000) },
+            429
+          );
         }
       }
 
+      // Crée le commentaire
       const comment = await storage.createComment({
         ...validation.data,
         userId: req.user.id
       });
 
-      return res.status(201).json(success(comment));
+      return sendSuccess(res, comment, 201);
     }
 
-    return res.status(405).json(error("Méthode non autorisée"));
+    return sendError(res, "Méthode non autorisée", undefined, 405);
   } catch (err) {
-    return res.status(500).json(handleError(err));
+    return handleServerError(res, err);
   }
 }

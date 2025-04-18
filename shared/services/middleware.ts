@@ -1,18 +1,25 @@
 
 import { Request, Response, NextFunction } from 'express';
-import { error } from './response';
+import { sendError } from './response';
+import { storage } from '../../server/storage';
 
-export function requireAuth(req: Request, res: Response, next: NextFunction) {
+export async function requireAuth(req: Request, res: Response, next: NextFunction) {
   if (!req.isAuthenticated()) {
-    return res.status(401).json(error("Non authentifié"));
+    return sendError(res, "Non authentifié", undefined, 401);
   }
   next();
 }
 
-export function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  if (!req.isAuthenticated() || !req.user.isAdmin) {
-    return res.status(403).json(error("Accès non autorisé"));
+export async function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!req.isAuthenticated()) {
+    return sendError(res, "Non authentifié", undefined, 401);
   }
+
+  const user = await storage.getUser(req.user.id);
+  if (!user?.isAdmin) {
+    return sendError(res, "Accès non autorisé", undefined, 403);
+  }
+
   next();
 }
 
@@ -26,7 +33,7 @@ export function rateLimit(req: Request, res: Response, next: NextFunction) {
   const lastAction = userLastAction.get(req.user.id) || 0;
   
   if (now - lastAction < 1000) {
-    return res.status(429).json(error("Trop de requêtes"));
+    return sendError(res, "Trop de requêtes", undefined, 429);
   }
   
   userLastAction.set(req.user.id, now);
