@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ImportModeSwitcher } from "@/components/admin/ImportModeSwitcher";
 import { ManualImport } from "@/components/admin/ManualImport";
+import { AutomaticImport } from "@/components/admin/AutomaticImport";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
@@ -83,11 +84,7 @@ export default function ImportVideosPage() {
         />
       )}
 
-      {mode === 'auto' && (
-        <div className="text-center p-8 text-gray-500">
-          Mode d'importation automatique en cours de développement
-        </div>
-      )}
+      {mode === 'auto' && <AutomaticImport />}
     </div>
   );
 }
