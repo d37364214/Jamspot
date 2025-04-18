@@ -148,6 +148,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Erreur lors de la suppression de la vidéo" });
     }
   });
+
+  // Import depuis une playlist YouTube
+  app.post("/api/import/playlist", isAdmin, async (req, res) => {
+    try {
+      const { playlistUrl } = req.body;
+      if (!playlistUrl) {
+        return res.status(400).json({ error: "URL de playlist manquante" });
+      }
+
+      // TODO: Extraire l'ID de la playlist depuis l'URL
+      const playlistId = playlistUrl.split("list=")[1]?.split("&")[0];
+      if (!playlistId) {
+        return res.status(400).json({ error: "URL de playlist invalide" });
+      }
+
+      // TODO: Utiliser l'API YouTube pour récupérer les vidéos de la playlist
+      const videos = []; // À implémenter avec l'API YouTube
+      
+      // Créer un log d'activité
+      await storage.createActivityLog({
+        action: "IMPORT",
+        entityType: "playlist",
+        userId: req.user.id,
+        details: `Import playlist: ${playlistUrl}`,
+        timestamp: new Date().toISOString(),
+      });
+
+      res.json({ message: "Import de playlist en cours", playlistId });
+    } catch (error) {
+      console.error("Erreur lors de l'import de la playlist:", error);
+      res.status(500).json({ error: "Erreur lors de l'import de la playlist" });
+    }
+  });
+
+  // Configuration de la surveillance d'une chaîne YouTube
+  app.post("/api/import/channel", isAdmin, async (req, res) => {
+    try {
+      const { channelUrl, frequency } = req.body;
+      if (!channelUrl) {
+        return res.status(400).json({ error: "URL de chaîne manquante" });
+      }
+
+      if (!["daily", "weekly"].includes(frequency)) {
+        return res.status(400).json({ error: "Fréquence invalide" });
+      }
+
+      // TODO: Extraire l'ID de la chaîne depuis l'URL
+      const channelId = channelUrl.split("/channel/")[1]?.split("/")[0];
+      if (!channelId) {
+        return res.status(400).json({ error: "URL de chaîne invalide" });
+      }
+
+      // TODO: Enregistrer la configuration de surveillance dans la base de données
+      
+      // Créer un log d'activité
+      await storage.createActivityLog({
+        action: "WATCH",
+        entityType: "channel",
+        userId: req.user.id,
+        details: `Configuration surveillance chaîne: ${channelUrl} (${frequency})`,
+        timestamp: new Date().toISOString(),
+      });
+
+      res.json({ message: "Configuration de surveillance enregistrée", channelId, frequency });
+    } catch (error) {
+      console.error("Erreur lors de la configuration de la surveillance:", error);
+      res.status(500).json({ error: "Erreur lors de la configuration de la surveillance" });
+    }
+  });
   
   // Routes pour les catégories
   app.get("/api/categories", async (_req, res) => {

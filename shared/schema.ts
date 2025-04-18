@@ -145,5 +145,23 @@ export type Video = typeof videos.$inferSelect;
 export type InsertVideoTag = z.infer<typeof insertVideoTagSchema>;
 export type VideoTag = typeof videoTags.$inferSelect;
 
+// Chaînes YouTube surveillées
+export const watchedChannels = sqliteTable("watched_channels", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  channelId: text("channel_id").notNull().unique(),
+  frequency: text("frequency").notNull(), // daily ou weekly
+  lastCheck: text("last_check"),
+  createdAt: text("created_at").default(defaultDate()),
+  updatedAt: text("updated_at").default(defaultDate()),
+});
+
+export const insertWatchedChannelSchema = createInsertSchema(watchedChannels).pick({
+  channelId: true,
+  frequency: true,
+});
+
+export type InsertWatchedChannel = z.infer<typeof insertWatchedChannelSchema>;
+export type WatchedChannel = typeof watchedChannels.$inferSelect;
+
 export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
 export type ActivityLog = typeof activityLogs.$inferSelect;

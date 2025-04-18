@@ -46,10 +46,30 @@ export function AutomaticImport() {
   const onPlaylistSubmit = async (data: PlaylistFormValues) => {
     setIsImporting(true);
     try {
-      // TODO: Implémenter l'import de playlist
-      console.log("Import playlist:", data);
-    } catch (error) {
-      console.error("Erreur lors de l'import de la playlist:", error);
+      const response = await fetch("/api/import/playlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Erreur lors de l'import");
+      }
+
+      const result = await response.json();
+      toast({
+        title: "Import en cours",
+        description: `L'import de la playlist ${result.playlistId} a démarré`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Erreur lors de l'import de la playlist",
+        variant: "destructive",
+      });
     } finally {
       setIsImporting(false);
     }
@@ -58,10 +78,30 @@ export function AutomaticImport() {
   const onChannelSubmit = async (data: ChannelFormValues) => {
     setIsImporting(true);
     try {
-      // TODO: Implémenter la surveillance de chaîne
-      console.log("Configuration surveillance chaîne:", data);
-    } catch (error) {
-      console.error("Erreur lors de la configuration:", error);
+      const response = await fetch("/api/import/channel", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Erreur lors de la configuration");
+      }
+
+      const result = await response.json();
+      toast({
+        title: "Configuration enregistrée",
+        description: `La surveillance de la chaîne ${result.channelId} est configurée (${result.frequency})`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Erreur lors de la configuration",
+        variant: "destructive",
+      });
     } finally {
       setIsImporting(false);
     }
