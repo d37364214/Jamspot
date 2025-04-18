@@ -107,29 +107,34 @@ export function setupAuth(app: Express) {
     });
   });
 
-  app.post("/api/login", (req, res, next) => {
+  app.post("/api/login", (req, res) => {
     console.log("Tentative de connexion pour l'utilisateur:", req.body.username);
     
-    passport.authenticate("local", (err: any, user: Express.User | false, info: any) => {
-      if (err) {
-        console.error("Erreur d'authentification:", err);
-        return next(err);
-      }
-      
-      if (!user) {
-        console.error("Échec d'authentification pour l'utilisateur:", req.body.username);
-        return res.status(401).json({ message: "Identifiants invalides" });
-      }
-      
-      req.login(user, (err) => {
+    try {
+      passport.authenticate("local", (err: any, user: Express.User | false, info: any) => {
         if (err) {
-          console.error("Erreur lors de la connexion:", err);
-          return next(err);
+          console.error("Erreur d'authentification:", err);
+          return res.status(500).json({ message: "Erreur interne du serveur" });
         }
-        console.log("Utilisateur connecté avec succès:", user.username);
-        return res.status(200).json(user);
-      });
-    })(req, res, next);
+        
+        if (!user) {
+          console.error("Échec d'authentification pour l'utilisateur:", req.body.username);
+          return res.status(401).json({ message: "Identifiants invalides" });
+        }
+        
+        req.login(user, (loginErr) => {
+          if (loginErr) {
+            console.error("Erreur lors de la connexion:", loginErr);
+            return res.status(500).json({ message: "Erreur lors de la connexion" });
+          }
+          console.log("Utilisateur connecté avec succès:", user.username);
+          return res.status(200).json(user);
+        });
+      })(req, res, () => {});
+    } catch (error) {
+      console.error("Erreur inattendue lors de la connexion:", error);
+      return res.status(500).json({ message: "Erreur inattendue lors de la connexion" });
+    }
   });
 
   app.post("/api/logout", (req, res, next) => {
