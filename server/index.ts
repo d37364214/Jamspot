@@ -65,5 +65,6 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`Server running at http://0.0.0.0:${port}`);
+    log(`Hot Module Replacement (HMR) activé sur le port ${port}`);
   });
 })();
