@@ -1,0 +1,64 @@
+
+import type { Request, Response } from 'express';
+import { z } from 'zod';
+import { storage } from '../../../server/storage';
+
+const COMMENT_COOLDOWN = 30000; // 30 secondes entre les commentaires
+
+// Schéma de validation pour la création d'un commentaire
+const createCommentSchema = z.object({
+  videoId: z.number(),
+  content: z.string().min(1, "Le commentaire ne peut pas être vide").max(1000, "Le commentaire est trop long")
+});
+
+export default async function handler(req: Request, res: Response) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Vous devez être connecté pour commenter" });
+  }
+
+  try {
+    if (req.method === 'GET') {
+      const videoId = parseInt(req.query.videoId as string);
+      if (isNaN(videoId)) {
+        return res.status(400).json({ error: "ID de vidéo invalide" });
+      }
+
+      const comments = await storage.getVideoComments(videoId);
+      return res.status(200).json(comments);
+
+    } else if (req.method === 'POST') {
+      const validation = createCommentSchema.safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({ 
+          error: "Données invalides", 
+          details: validation.error.flatten() 
+        });
+      }
+
+      // Vérification du délai entre les commentaires
+      const lastComment = await storage.getLastUserComment(req.user.id);
+      if (lastComment) {
+        const timeSinceLastComment = Date.now() - new Date(lastComment.createdAt).getTime();
+        if (timeSinceLastComment < COMMENT_COOLDOWN) {
+          return res.status(429).json({ 
+            error: "Veuillez attendre avant de poster un nouveau commentaire",
+            waitTime: Math.ceil((COMMENT_COOLDOWN - timeSinceLastComment) / 1000)
+          });
+        }
+      }
+
+      const comment = await storage.createComment({
+        ...validation.data,
+        userId: req.user.id
+      });
+
+      return res.status(201).json(comment);
+    }
+
+    return res.status(405).json({ error: "Méthode non autorisée" });
+  } catch (error) {
+    console.error("Erreur lors de la gestion des commentaires:", error);
+    return res.status(500).json({ error: "Erreur interne du serveur" });
+  }
+}

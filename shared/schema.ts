@@ -163,5 +163,46 @@ export const insertWatchedChannelSchema = createInsertSchema(watchedChannels).pi
 export type InsertWatchedChannel = z.infer<typeof insertWatchedChannelSchema>;
 export type WatchedChannel = typeof watchedChannels.$inferSelect;
 
+// Commentaires
+export const comments = sqliteTable("comments", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  videoId: integer("video_id").notNull().references(() => videos.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  createdAt: text("created_at").default(defaultDate()),
+  updatedAt: text("updated_at").default(defaultDate())
+});
+
+// Notations
+export const ratings = sqliteTable("ratings", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  videoId: integer("video_id").notNull().references(() => videos.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  rating: integer("rating").notNull(),
+  createdAt: text("created_at").default(defaultDate()),
+  updatedAt: text("updated_at").default(defaultDate())
+});
+
+// Schémas d'insertion
+export const insertCommentSchema = createInsertSchema(comments).pick({
+  videoId: true,
+  userId: true,
+  content: true
+});
+
+export const insertRatingSchema = createInsertSchema(ratings).pick({
+  videoId: true,
+  userId: true,
+  rating: true
+}).extend({
+  rating: z.number().min(1).max(5)
+});
+
+export type InsertComment = z.infer<typeof insertCommentSchema>;
+export type Comment = typeof comments.$inferSelect;
+
+export type InsertRating = z.infer<typeof insertRatingSchema>;
+export type Rating = typeof ratings.$inferSelect;
+
 export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
 export type ActivityLog = typeof activityLogs.$inferSelect;

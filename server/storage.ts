@@ -468,6 +468,105 @@ export class DatabaseStorage implements IStorage {
     const result = await db.select({ count: sql`count(*)` }).from(users);
     return result[0].count;
   }
+
+  // --------------------- Comments Management --------------------- //
+  
+  async getVideoComments(videoId: number): Promise<Comment[]> {
+    return await db.select()
+      .from(comments)
+      .where(eq(comments.videoId, videoId))
+      .orderBy(desc(comments.createdAt));
+  }
+
+  async getComment(id: number): Promise<Comment | undefined> {
+    const result = await db.select().from(comments).where(eq(comments.id, id));
+    return result[0];
+  }
+
+  async createComment(insertComment: InsertComment): Promise<Comment> {
+    const now = new Date().toISOString();
+    const result = await db.insert(comments).values({
+      ...insertComment,
+      createdAt: now,
+      updatedAt: now
+    }).returning();
+    return result[0];
+  }
+
+  async updateComment(id: number, content: string): Promise<Comment | undefined> {
+    const now = new Date().toISOString();
+    const result = await db.update(comments)
+      .set({
+        content,
+        updatedAt: now
+      })
+      .where(eq(comments.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteComment(id: number): Promise<boolean> {
+    const result = await db.delete(comments).where(eq(comments.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async getLastUserComment(userId: number): Promise<Comment | undefined> {
+    const result = await db.select()
+      .from(comments)
+      .where(eq(comments.userId, userId))
+      .orderBy(desc(comments.createdAt))
+      .limit(1);
+    return result[0];
+  }
+
+  // --------------------- Ratings Management --------------------- //
+  
+  async getVideoRating(videoId: number, userId: number): Promise<Rating | undefined> {
+    const result = await db.select()
+      .from(ratings)
+      .where(and(
+        eq(ratings.videoId, videoId),
+        eq(ratings.userId, userId)
+      ));
+    return result[0];
+  }
+
+  async getVideoAverageRating(videoId: number): Promise<number> {
+    const result = await db.select({
+      average: sql`ROUND(AVG(${ratings.rating}), 2)`
+    })
+    .from(ratings)
+    .where(eq(ratings.videoId, videoId));
+    return result[0].average || 0;
+  }
+
+  async createOrUpdateRating(insertRating: InsertRating): Promise<Rating> {
+    const now = new Date().toISOString();
+    const existing = await this.getVideoRating(insertRating.videoId, insertRating.userId);
+
+    if (existing) {
+      const result = await db.update(ratings)
+        .set({
+          rating: insertRating.rating,
+          updatedAt: now
+        })
+        .where(eq(ratings.id, existing.id))
+        .returning();
+      return result[0];
+    }
+
+    const result = await db.insert(ratings).values({
+      ...insertRating,
+      createdAt: now,
+      updatedAt: now
+    }).returning();
+    return result[0];
+  }
+
+  async deleteRating(id: number): Promise<boolean> {
+    const result = await db.delete(ratings).where(eq(ratings.id, id)).returning();
+    return result.length > 0;
+  }
 }
 
 export const storage = new DatabaseStorage();
