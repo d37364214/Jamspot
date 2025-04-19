@@ -1,0 +1,16 @@
+image:
+  file: .gitpod.Dockerfile
+
+tasks:
+  - init: npm install --workspace=client && npm install --workspace=api && npm install --workspace=shared
+    command: npm run dev --workspace=client
+
+ports:
+  - port: 5173
+    onOpen: open-preview
+  - port: 3000
+    onOpen: notify
+
+vscode:
+  extensions:
+    - codeium.codeium
