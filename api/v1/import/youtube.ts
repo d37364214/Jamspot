@@ -1,6 +1,13 @@
 
 import type { Request, Response } from 'express';
+import { google } from 'googleapis';
 import { storage } from '@shared/storage';
+import dotenv from 'dotenv';
+
+dotenv.config(); // Charge les variables d'environnement depuis .env
+
+const youtube = google.youtube({ version: 'v3', auth: process.env.YOUTUBE_API_KEY });
+
 
 export default async function handler(req: Request, res: Response) {
   if (req.method !== 'POST') {
