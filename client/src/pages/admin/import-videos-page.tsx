@@ -30,11 +30,12 @@ export default function ImportVideosPage() {
       const results = [];
       for (const url of urls) {
         try {
-          const res = await apiRequest("POST", "/api/videos", {
-            youtubeId: extractYouTubeId(url.trim()),
-            categoryId: data.categoryId ? parseInt(data.categoryId) : null,
-            subcategoryId: data.subcategoryId ? parseInt(data.subcategoryId) : null,
-          });
+          const res = await apiRequest("POST", "/api/v1/import/youtube", {
+  youtubeId: extractYouTubeId(url.trim()),
+  categoryId: data.categoryId ? parseInt(data.categoryId) : null,
+  subcategoryId: data.subcategoryId ? parseInt(data.subcategoryId) : null,
+ });
+
           results.push(await res.json());
         } catch (error) {
           console.error(`Erreur lors de l'import de ${url}:`, error);
