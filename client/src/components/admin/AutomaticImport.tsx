@@ -46,7 +46,7 @@ export function AutomaticImport() {
   const onPlaylistSubmit = async (data: PlaylistFormValues) => {
     setIsImporting(true);
     try {
-      const response = await fetch("/api/import/playlist", {
+      const response = await fetch("/api/v1/import/youtube", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -78,7 +78,7 @@ export function AutomaticImport() {
   const onChannelSubmit = async (data: ChannelFormValues) => {
     setIsImporting(true);
     try {
-      const response = await fetch("/api/import/channel", {
+      const response = await fetch("/api/v1/import/youtube", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
