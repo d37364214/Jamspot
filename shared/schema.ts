@@ -50,5 +50,10 @@ export type InsertWatchedChannel = z.infer<typeof insertWatchedChannelSchema>; e
 
 export const comments = pgTable("comments", { id: serial("id").primaryKey(), videoId: integer("video_id").notNull().references(() => videos.id), userId: integer("user_id").notNull().references(() => users.id), content: text("content").notNull(), createdAt: timestamp("created_at").defaultNow(), updatedAt: timestamp("updated_at").defaultNow(), });
 
-export const ratings = pgTable("ratings", { id: serial("id").primaryKey(), videoId: integer
-
+export const ratings = pgTable("ratings", {
+  id: serial("id").primaryKey(),
+  videoId: integer("video_id").notNull().references(() => videos.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  score: integer("score").notNull(), // 1 à 5, ou like/dislike ?
+  createdAt: timestamp("created_at").defaultNow(),
+});
