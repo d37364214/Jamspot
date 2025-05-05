@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (authError) {
-      console.error("Erreur d'authentification Supabase:", authError.message);
+      console.error("Supabase Auth Error:", authError); // Utilisation de console.error pour les erreurs
       return res.status(401).json({ error: "Identifiants invalides ou utilisateur inexistant" });
     }
 
@@ -34,10 +34,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const user = authData.user;
 
     if (!session || !user) {
+      console.error("Supabase Auth Error: Session or user data missing");
       return res.status(500).json({ error: "Échec de la récupération des informations utilisateur" });
     }
 
-    console.log("Utilisateur connecté avec succès:", user.email);
+    // Log de succès (remplacer par un système de logging en production)
+    console.log(`User ${user.email} logged in successfully`);
 
     // Retourner les informations utilisateur et les tokens
     return res.status(200).json({
@@ -49,7 +51,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
   } catch (error) {
-    console.error("Erreur imprévue lors de la connexion:", error);
+    console.error("Unhandled Error:", error);
     return res.status(500).json({ error: "Erreur imprévue lors de la connexion" });
   }
 }
+
+// ATTENTION: SUPABASE_SERVICE_ROLE_KEY est utilisé ici car cette route est côté serveur.
+// NE JAMAIS l'utiliser côté client.  Pour les opérations nécessitant des privilèges,
+// utiliser Row Level Security (RLS) ou des fonctions cloud Supabase.
