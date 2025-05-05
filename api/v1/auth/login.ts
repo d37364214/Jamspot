@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import logger from '../../utils/logger'; // Importe le logger configuré
 
 // Initialisation du client Supabase
 const supabaseUrl = process.env.SUPABASE_URL!;
@@ -8,12 +9,14 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
+    logger.debug('Received a non-POST request', { method: req.method, url: req.url });
     return res.status(405).json({ error: "Méthode non autorisée" });
   }
 
   const { email, password } = req.body;
 
   if (!email || !password) {
+    logger.debug('Email and password are required', { email, password });
     return res.status(400).json({ error: "L'email et le mot de passe sont requis" });
   }
 
@@ -25,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (authError) {
-      console.error("Supabase Auth Error:", authError); // Utilisation de console.error pour les erreurs
+      logger.error('Supabase Auth Error', { error: authError, email });
       return res.status(401).json({ error: "Identifiants invalides ou utilisateur inexistant" });
     }
 
@@ -34,12 +37,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const user = authData.user;
 
     if (!session || !user) {
-      console.error("Supabase Auth Error: Session or user data missing");
+      logger.error('Supabase Auth Error: Session or user data missing', { session, user });
       return res.status(500).json({ error: "Échec de la récupération des informations utilisateur" });
     }
 
-    // Log de succès (remplacer par un système de logging en production)
-    console.log(`User ${user.email} logged in successfully`);
+    // Log de succès
+    logger.info(`User ${user.email} logged in successfully`, { userId: user.id });
 
     // Retourner les informations utilisateur et les tokens
     return res.status(200).json({
@@ -51,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
   } catch (error) {
-    console.error("Unhandled Error:", error);
+    logger.error('Unhandled Error during login', { error, email });
     return res.status(500).json({ error: "Erreur imprévue lors de la connexion" });
   }
 }
