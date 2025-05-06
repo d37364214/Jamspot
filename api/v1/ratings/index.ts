@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import logger from '../../../utils/logger'; // Ajustez le chemin si nécessaire
-import { sendError, handleZodError, handleServerError } from '../../../../shared/services/response'; // Ajustez les chemins si nécessaire
+import { sendError, handleZodError, handleServerError } from '../../../shared/services/response'; // Ajustez les chemins si nécessaire
 
 const ratingSchema = z.object({
   videoId: z.number().positive("ID de vidéo invalide"),
