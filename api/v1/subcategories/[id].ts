@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import logger from '../../../../utils/logger'; // Ajustez le chemin si nécessaire
+import logger from '../../../utils/logger'; // Ajustez le chemin si nécessaire
 import { subcategories } from '../../../../shared/schema'; // Importez votre schéma Drizzle pour les types
 
 // Schéma de validation (correspondant à insertSubcategorySchema - adaptez-le si nécessaire)
