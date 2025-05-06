@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
-import logger from '../../utils/logger'; // Importe le logger configuré
+import logger from '../../../utils/logger'; // Importe le logger configuré
 
 // Initialisation du client Supabase (avec la clé publique, car la déconnexion se fait côté client)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
