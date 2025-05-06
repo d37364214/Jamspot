@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import logger from '../../../../utils/logger'; // Ajustez le chemin si nécessaire
+import logger from '../../../utils/logger'; // Ajustez le chemin si nécessaire
 
 const updateCommentSchema = z.object({
   content: z.string().min(1, "Le commentaire ne peut pas être vide").max(1000, "Le commentaire est trop long")
