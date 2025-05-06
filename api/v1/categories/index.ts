@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import logger from '../../../utils/logger'; // Ajustez le chemin si nécessaire
-import { categories } from '../../../../shared/schema'; // Importez votre schéma Drizzle pour les types
+import { categories } from '../../../shared/schema'; // Importez votre schéma Drizzle pour les types
 
 // Schéma de validation (correspondant à insertCategorySchema)
 const insertCategorySchema = z.object({
