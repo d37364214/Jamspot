@@ -1,5 +1,4 @@
-
-import { Response } from 'express';
+import type { NextApiResponse } from 'next';
 import { ZodError } from 'zod';
 
 export interface ApiResponse<T = any> {
@@ -9,14 +8,14 @@ export interface ApiResponse<T = any> {
   details?: any;
 }
 
-export function sendSuccess<T>(res: Response, data: T, status = 200) {
+export function sendSuccess<T>(res: NextApiResponse, data: T, status = 200) {
   return res.status(status).json({
     success: true,
     data
   });
 }
 
-export function sendError(res: Response, message: string, details?: any, status = 400) {
+export function sendError(res: NextApiResponse, message: string, details?: any, status = 400) {
   return res.status(status).json({
     success: false,
     error: message,
@@ -24,12 +23,12 @@ export function sendError(res: Response, message: string, details?: any, status 
   });
 }
 
-export function handleZodError(res: Response, err: ZodError) {
+export function handleZodError(res: NextApiResponse, err: ZodError) {
   console.error("Erreur de validation:", err.flatten());
   return sendError(res, "Données invalides", err.flatten(), 400);
 }
 
-export function handleServerError(res: Response, err: any) {
+export function handleServerError(res: NextApiResponse, err: any) {
   console.error("Erreur serveur:", err);
   return sendError(res, "Erreur interne du serveur", undefined, 500);
 }
