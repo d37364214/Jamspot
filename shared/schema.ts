@@ -56,4 +56,4 @@ export const ratings = pgTable("ratings", {
   userId: integer("user_id").notNull().references(() => users.id),
   score: integer("score").notNull(), // 1 à 5, ou like/dislike ?
   createdAt: timestamp("created_at").defaultNow(),
-});
+**});**
