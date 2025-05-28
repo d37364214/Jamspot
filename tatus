@@ -3,3 +3,144 @@
 [33m83b6fbd[m Create next.config.js
 [33mc573a5d[m Add next, react, react-dom to dependencies in package.json
 [33m1db8f08[m ok
+[33m26d832a[m Update schema.ts
+[33m5cf52d2[m Update schema.ts
+[33md45dcfe[m Update schema.ts
+[33m3e00019[m Merge pull request #1 from d37364214/npm-audit-fix---force
+[33m4f34867[m Update package.json
+[33mef8da40[m Update package.json
+[33m3178f25[m Update package.json
+[33ma1c7f13[m[33m ([m[1;32mnpm-audit-fix---force[m[33m)[m Ok
+[33ma6c4876[m ok
+[33m5e0a0d8[m ok
+[33m0053708[m Update schema.ts
+[33m199be43[m Update tsconfig.json
+[33ma9cecb6[m Update package.json
+[33maf7048e[m Update .gitignore
+[33m7f24da7[m Update response.ts
+[33m0c71b89[m Delete shared/services/middleware.ts
+[33mead4b86[m Delete shared/services/logger.ts
+[33m08e04cb[m Delete data directory
+[33mc8f0271[m Delete server directory
+[33m68b6e94[m Update index.ts
+[33mf45c1c6[m Update index.ts
+[33m67f4f71[m Update [id].ts
+[33m12adc71[m Update index.ts
+[33mc425833[m Update [id].ts
+[33meb02164[m Update index.ts
+[33mca2f28d[m Update [id].ts
+[33mde555c5[m Update index.ts
+[33mbac30bc[m Update index.ts
+[33m8dddbad[m Update index.ts
+[33m79b6b03[m Update index.ts
+[33md817fd1[m Update [id].ts
+[33m3abadbd[m Update index.ts
+[33mcee6e90[m Update index.ts
+[33m55eccb0[m Update [id].ts
+[33ma934c32[m Update [id].ts
+[33m7909b3e[m Update index.ts
+[33maf527a6[m Update [id].ts
+[33m482c7bd[m Update index.ts
+[33m87fc0f1[m Update [id].ts
+[33mda46d6c[m Update index.ts
+[33mdfdcb93[m Update youtube.ts
+[33md1b71c2[m Update index.ts
+[33mc487fb8[m Update [id].ts
+[33md33f9bf[m Update register.ts
+[33m70ecafb[m Update me.ts
+[33mc0a3960[m Update index.ts
+[33m2954cea[m Update logout.ts
+[33m2b13620[m Update login.ts
+[33m4488e23[m Update [id].ts
+[33m0a83065[m Update register.ts
+[33m2c74f22[m Update me.ts
+[33mfdc6f7e[m Update logout.ts
+[33md66d832[m[33m ([m[1;31morigin/npm-audit-fix---force[m[33m)[m Ok
+[33m97d1957[m ok
+[33mab10b66[m ok
+[33m437b10f[m Update login.ts
+[33m2c12106[m Update logger.ts
+[33m6fda4e2[m ok
+[33m6f7cb4e[m Update login.ts
+[33mb28f9b5[m ok
+[33mc7e1d93[m Update schema.ts
+[33m993555d[m ok
+[33md6c05e3[m Update schema.ts
+[33mf694062[m Update package.json
+[33md96dcfd[m Update package.json
+[33mebf7d02[m Update login.ts
+[33maca64dc[m ok
+[33mbe46861[m Update vercel.json
+[33ma2e1e64[m Create supabaseClient.ts
+[33mf8d5efd[m Update import-videos-page.tsx
+[33m44568cb[m Update import-videos-page.tsx
+[33m96880a2[m Update AutomaticImport.tsx
+[33m969d4dd[m Update youtube.ts
+[33m69c1b2b[m Update youtube.ts
+[33mab04c83[m Update youtube.ts
+[33m2ad504e[m Update .gitignore
+[33m4858e3e[m Ok
+[33m1bff1ae[m Ok
+[33m51d0ad4[m Create .env
+[33m8f76e62[m Create .gitpod.Dockerfile
+[33m0cb124c[m Create .gitpod.yml
+[33m486c25c[m OK ok
+[33m3d34946[m Assistant checkpoint: Mise à jour services et route comments
+[33m75e21e2[m Checkpoint before assistant change: Improved the music database
+[33m5b2a3e8[m Assistant checkpoint
+[33m1c456d3[m Checkpoint before assistant change: Improved database consistency
+[33m6034cd9[m Assistant checkpoint: Ajout des routes pour commentaires et notations
+[33m600e823[m Checkpoint before assistant change: Added comment and rating features
+[33m696a5d2[m Assistant checkpoint: Création des routes de gestion des utilisateurs
+[33m6195ef5[m Checkpoint before assistant change: Updated the music video database
+[33m445cb7b[m Assistant checkpoint: Ajout des routes auth logout et me
+[33m91a3eb4[m Checkpoint before assistant change: Updated the music video database
+[33md343845[m Assistant checkpoint: Created routes for categories, subcategories and tags
+[33m2a87f44[m Checkpoint before assistant change: Updates the music video database
+[33m1698591[m Assistant checkpoint: Create serverless API routes for auth, categories and import
+[33m40713ce[m Checkpoint before assistant change: Updates the deployment process
+[33m37df290[m Assistant checkpoint: Initialize serverless API structure
+[33m6a7b875[m Checkpoint before assistant change: Update database location
+[33me76aa1d[m Ok
+[33mdec5110[m Assistant checkpoint: Configuration Vite mise à jour
+[33m3c96c7d[m Checkpoint before assistant change: Updates the project's deployment setup
+[33m4feee98[m Assistant checkpoint
+[33m8b2b25a[m Checkpoint before assistant change: Fixes a server crash when logging in
+[33m8f607c7[m Assistant checkpoint: Améliorer la configuration de Vite et du serveur
+[33m79f529b[m Checkpoint before assistant change: Fixes a persistent problem
+[33m20eba19[m Assistant checkpoint: Update server configuration for external access
+[33mf21029c[m Checkpoint before assistant change: Fixes a loading issue
+[33m6b21731[m Assistant checkpoint: Fix React root mounting and improve error handling
+[33mb3cab89[m Checkpoint before assistant change: Fixes a problem with music video loading
+[33m032d5e6[m Assistant checkpoint: Configure Vite pour un accès externe
+[33m1f6b7ee[m Checkpoint before assistant change: Fixed website preview delays
+[33mda2f288[m Create vercel.json
+[33m6e1008f[m Ok
+[33md5e2efc[m Assistant checkpoint: Implémentation de l'import automatique des vidéos YouTube
+[33m9157f9f[m Checkpoint before assistant change: Adds automatic video import
+[33m257a7a0[m Assistant checkpoint: Ajout du mode d'import automatique
+[33m225c255[m Checkpoint before assistant change: Updates music video database
+[33m3889801[m Assistant checkpoint: Add import mode switcher and manual import components
+[33m6ae6fb4[m Checkpoint before assistant change: Improves video importing
+[33m0f035c3[m Checkpoint before assistant change: Updated the music video database
+[33ma1cb39e[m OK
+[33m5f3256b[m Assistant checkpoint: Ajout d'une page d'importation de vidéos YouTube
+[33mace6400[m Checkpoint before assistant change: Updates music video database
+[33m8037877[m Ok
+[33ma5c0593[m Updated the video display and user authentication
+[33m3af2872[m Improved the admin panel
+[33m7f4353d[m Improved admin panel with charts and data
+[33m32249f8[m OK
+[33mf6a18b4[m Fixes a login problem for admins
+[33mc594d3c[m Fixes admin login issues
+[33m7a6fd92[m Improved admin access and login
+[33m0574706[m Improved the login and signup pages
+[33m93d196c[m Improved admin access and login
+[33m1b0545c[m Fixes a login error
+[33m189ae7a[m Adds an admin account
+[33mfdfe49f[m Updated the database
+[33mfc58aba[m Add database to store music videos
+[33m7ee7b49[m Implement PostgreSQL database for user accounts, videos, and categories.
+[33m04a8b51[m Add UI components using Radix UI and other libraries.  This commit introduces a set of reusable UI components, including buttons, inputs, and dialogs, to improve the user interface.
+[33mec2f247[m Checkpoint after starting plan
+[33m2837f09[m Initial commit
