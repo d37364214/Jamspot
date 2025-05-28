@@ -3,7 +3,7 @@ import { google } from 'googleapis';
 import { createClient } from '@supabase/supabase-js';
 import logger from '../../../utils/logger'; // Ajustez le chemin si nécessaire
 
-const youtube = google.youtube({ version: 'v3', auth: process.env.YOUTUBE_API_KEY });
+const youtube = google.youtube({ version: 'v3', auth: process.env.API_KEY });
 
 // Initialisation du client Supabase (avec la clé SERVICE_ROLE pour les opérations serveur sécurisées)
 const supabaseUrl = process.env.SUPABASE_URL!;
