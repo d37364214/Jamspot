@@ -4,7 +4,7 @@ import logger from '../../../utils/logger'; // Importe le logger configuré
 
 // Initialisation du client Supabase
 const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -58,7 +58,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: "Erreur imprévue lors de la connexion" });
   }
 }
-
-// ATTENTION: SUPABASE_SERVICE_ROLE_KEY est utilisé ici car cette route est côté serveur.
-// NE JAMAIS l'utiliser côté client.  Pour les opérations nécessitant des privilèges,
-// utiliser Row Level Security (RLS) ou des fonctions cloud Supabase.
