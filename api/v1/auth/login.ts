@@ -52,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Récupérer les tokens et les détails utilisateur
     const session = authData.session;
-    const user = authData.user;
+    const user = authData.user; // Cet objet 'user' est l'objet complet de Supabase
 
     if (!session || !user) {
       logger.error('Supabase Auth Error: Session or user data missing', { session, user });
@@ -65,7 +65,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Retourner les informations utilisateur et les tokens
     return res.status(200).json({
       message: "Connexion réussie",
-      user, // Rappel : Pensez à filtrer les propriétés de 'user' si certaines sont sensibles ou non nécessaires côté client.
+      // FILTRAGE DE L'OBJET 'user' ICI :
+      user: {
+        id: user.id,
+        email: user.email,
+        created_at: user.created_at,
+        // Ajoutez d'autres champs si nécessaire et non sensibles, par exemple :
+        // app_metadata: user.app_metadata,
+        // user_metadata: user.user_metadata,
+      },
       tokens: {
         accessToken: session.access_token,
         refreshToken: session.refresh_token,
@@ -81,4 +89,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 // La clé de rôle de service (SUPABASE_SERVICE_ROLE_KEY) ne doit JAMAIS être utilisée pour des opérations côté client
 // ou pour des flux d'authentification utilisateur standard.
 // Elle est réservée aux opérations de backend nécessitant des privilèges élevés (ex: administration, migrations).
-
