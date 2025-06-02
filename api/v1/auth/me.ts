@@ -1,31 +1,18 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
-import { withApiAuth } from '@supabase/nextjs';
+import { withApiAuth, User as SupabaseUser, Session } from '@supabase/nextjs';
 import logger from '../../../utils/logger';
 
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
-
-// Typage du JWT (à ajuster selon ton auth)
-interface Token {
-  sub: string;
-  email?: string;
-  [key: string]: any;
-}
-
 // Typage de l'utilisateur renvoyé depuis Supabase
-interface User {
+interface UserFiltered {
   id: string;
   email: string;
   created_at: string;
-  // Ajoute d'autres champs ici si besoin
 }
 
 export default withApiAuth(async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
-  token: Token | null
+  { supabaseClient, user: authenticatedUser }: { supabaseClient: any; user: SupabaseUser | null; session: Session | null }
 ) {
   if (req.method !== 'GET') {
     logger.debug('Received a non-GET request for /api/me', { method: req.method, url: req.url });
@@ -33,16 +20,17 @@ export default withApiAuth(async function handler(
   }
 
   try {
-    if (!token?.sub) {
+    if (!authenticatedUser?.id) {
       logger.debug('User not authenticated for /api/me');
       return res.status(401).json({ error: "Non authentifié" });
     }
 
-    const userId = token.sub;
+    const userId = authenticatedUser.id;
 
-    const { data: user, error } = await supabaseAdmin
-      .from<User>('users')
-      .select('id, email, created_at') // Remplace/complète avec les bons champs
+    // Utilisation du client fourni par withApiAuth
+    const { data: user, error } = await supabaseClient
+      .from<UserFiltered>('users')
+      .select('id, email, created_at')
       .eq('id', userId)
       .single();
 
@@ -53,7 +41,7 @@ export default withApiAuth(async function handler(
 
     if (!user) {
       logger.warn('User not found in Supabase', { userId });
-      return res.status(404).json({ error: "Utilisateur non trouvé" });
+      return res.status(404).json({ error: "Profil utilisateur non trouvé" });
     }
 
     logger.info(`Successfully retrieved user info for user ${user.email}`, { userId: user.id });
