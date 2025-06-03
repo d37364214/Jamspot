@@ -1,76 +1,89 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-// Importe withApiAuth et les typages de Supabase nécessaires
-import { withApiAuth, User as SupabaseUser, Session } from '@supabase/nextjs';
-import logger from '../../../utils/logger'; // Importe le logger configuré
+import type { NextApiRequest, NextApiResponse } from 'next'; // Pour le typage
+import { createClient } from '@supabase/supabase-js';
+import logger from '../../../utils/logger';
 
-// Typage de l'utilisateur renvoyé depuis Supabase après filtrage
+// Initialisation du client Supabase pour la vérification du token (utilise la SERVICE_ROLE_KEY)
+// Ce client aura les droits admin pour valider les JWT et potentiellement d'autres actions admin.
+const supabaseUrl = process.env.SUPABASE_URL!;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+// Initialisation du client Supabase pour les requêtes utilisateur (utilise l'Anon Key)
+// Ce client respectera les RLS et sera utilisé pour récupérer les données du profil de l'utilisateur.
+const supabaseAnon = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!, // Utilisation de NEXT_PUBLIC_SUPABASE_URL pour l'URL
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! // Utilisation de l'Anon Key
+);
+
+// Typage de l'utilisateur renvoyé
 interface UserFiltered {
   id: string;
   email: string;
   created_at: string;
   // Ajoute d'autres champs ici si tu veux les inclure dans la réponse
-  // Par exemple, si tu as user_metadata ou app_metadata et que tu les filtres
-  // app_metadata?: Record<string, any>;
-  // user_metadata?: Record<string, any>;
 }
 
-export default withApiAuth(async function handler(
+export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse,
-  // withApiAuth fournit supabaseClient et user (l'utilisateur authentifié) dans le troisième argument
-  { supabaseClient, user: authenticatedUser }: { supabaseClient: any; user: SupabaseUser | null; session: Session | null }
+  res: NextApiResponse
 ) {
-  // Vérifie que la requête est de type GET
   if (req.method !== 'GET') {
     logger.debug('Received a non-GET request for /api/me', { method: req.method, url: req.url });
     return res.status(405).json({ error: "Méthode non autorisée" });
   }
 
   try {
-    // Vérifie si l'utilisateur est authentifié. authenticatedUser.id est l'UUID de l'utilisateur Supabase.
-    if (!authenticatedUser?.id) {
-      logger.debug('User not authenticated for /api/me');
-      return res.status(401).json({ error: "Non authentifié" });
+    // 1. Récupérer le token d'accès de l'en-tête Authorization
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      logger.debug('No or malformed Authorization header');
+      return res.status(401).json({ error: "Non authentifié: Token manquant ou mal formé." });
     }
 
-    const userId = authenticatedUser.id; // Récupère l'ID de l'utilisateur authentifié
+    const accessToken = authHeader.split(' ')[1];
 
-    // Utilise le client Supabase fourni par withApiAuth.
-    // Ce client est déjà authentifié avec la session de l'utilisateur courant et respecte les RLS.
-    const { data: user, error } = await supabaseClient
-      .from<UserFiltered>('users') // Assure-toi que 'users' est le nom correct de ta table de profils
-      .select('id, email, created_at') // Sélectionne uniquement les champs nécessaires et non sensibles
-      .eq('id', userId) // Filtre pour récupérer uniquement le profil de l'utilisateur courant
-      .single(); // S'attend à ne récupérer qu'une seule ligne
+    // 2. Vérifier la validité du token avec le client Admin Supabase
+    // C'est ici que le service role key est utilisé, pour valider le token, pas pour une opération CRUD d'utilisateur.
+    const { data: { user: supabaseAuthUser }, error: verifyError } = await supabaseAdmin.auth.getUser(accessToken);
 
-    // Gère les erreurs de la requête Supabase
-    if (error) {
-      logger.error('Error fetching user info from Supabase', {
-        errorMessage: error.message, // Message de l'erreur Supabase
+    if (verifyError || !supabaseAuthUser) {
+      logger.error('Token verification failed', { error: verifyError?.message, accessToken });
+      return res.status(401).json({ error: "Non authentifié: Token invalide ou expiré." });
+    }
+
+    const userId = supabaseAuthUser.id; // L'ID de l'utilisateur validé
+
+    // 3. Utiliser le client Supabase avec l'Anon Key pour récupérer les données du profil
+    // Cette requête respectera les RLS configurées sur votre table 'users'.
+    const { data: user, error: dbError } = await supabaseAnon
+      .from<UserFiltered>('users')
+      .select('id, email, created_at')
+      .eq('id', userId)
+      .single();
+
+    if (dbError) {
+      logger.error('Error fetching user info from Supabase DB', {
+        errorMessage: dbError.message,
         userId,
-        stack: error.stack, // Trace de l'erreur pour le débogage côté serveur
+        stack: dbError.stack,
       });
       return res.status(500).json({ error: "Une erreur interne est survenue lors de la récupération des informations utilisateur." });
     }
 
-    // Gère le cas où l'utilisateur est authentifié mais n'a pas de profil correspondant dans la table 'users'
     if (!user) {
-      logger.warn('User not found in Supabase (despite being authenticated)', { userId });
+      logger.warn('User profile not found in DB for authenticated user', { userId });
       return res.status(404).json({ error: "Profil utilisateur non trouvé." });
     }
 
-    // Log de succès
     logger.info(`Successfully retrieved user info for user ${user.email}`, { userId: user.id });
 
-    // Retourne les informations filtrées de l'utilisateur avec un statut 200 OK
     res.status(200).json(user);
 
   } catch (error) {
-    // Gère les erreurs inattendues (non liées directement à Supabase)
     logger.error('Unhandled error in /api/me', {
-      errorMessage: error instanceof Error ? error.message : String(error), // Gère les erreurs qui ne sont pas des instances d'Error
-      stack: error instanceof Error ? error.stack : undefined, // Ajoute la trace si c'est une instance d'Error
+      errorMessage: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
     });
     return res.status(500).json({ error: "Erreur interne. Veuillez réessayer plus tard." });
   }
-});
+}
