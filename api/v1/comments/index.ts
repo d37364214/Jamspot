@@ -156,7 +156,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .from('comments')
         .select('created_at')
         .eq('user_id', user.id)
-        .orderBy('created_at', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(1)
         .single();
 
