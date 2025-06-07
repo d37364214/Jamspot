@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'; // Used for typings only
-import { google } from 'googleapis';
-import { createClient } => '@supabase/supabase-js';
+import { google, youtube_v3 } from 'googleapis'; // Correction: Ajout de youtube_v3 pour le typage
+import { createClient } from '@supabase/supabase-js'; // Correction: Syntaxe d'importation
 import { z } from 'zod';
 import logger from '../../../utils/logger'; // Adjust path as necessary
 
@@ -85,7 +85,7 @@ async function getCurrentUser(req: NextApiRequest): Promise<any | null> {
     }
     return user;
   } catch (error) {
-    logger.error('Unexpected error while fetching user in getCurrentUser.', { error });
+      logger.error('Unexpected error while fetching user in getCurrentUser.', { error: error instanceof Error ? error.message : String(error) });
     return null;
   }
 }
@@ -142,7 +142,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // --- 2. YouTube API Call with Pagination ---
     do {
-      const playlistItems = await youtube.playlistItems.list({
+      // Correction: Ajout du typage explicite pour playlistItems
+      const playlistItems: youtube_v3.Schema$PlaylistItemListResponse = await youtube.playlistItems.list({
         part: ['snippet'],
         playlistId: playlistId,
         maxResults: 50, // YouTube API max results per request
@@ -232,4 +233,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return handleError(res, 500, "Erreur interne du serveur lors de l'importation de la playlist YouTube.", { error: error.message, stack: error.stack });
   }
 }
-
