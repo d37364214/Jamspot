@@ -31,6 +31,11 @@ const ratingSchema = z.object({
   rating: z.number().min(1, "La note doit être au moins 1.").max(5, "La note doit être au plus 5.")
 });
 
+// --- Interface pour le résultat de la fonction RPC 'get_average_rating' ---
+interface AverageRatingResult {
+  average_rating: number | null; // Assurez-vous que le type correspond à ce que votre fonction SQL retourne
+}
+
 // --- Fonctions utilitaires ---
 
 /**
@@ -78,7 +83,7 @@ async function getCurrentUser(req: NextApiRequest): Promise<any | null> {
     }
     return user;
   } catch (error) {
-    logger.error('Erreur inattendue lors de la récupération de l\'utilisateur.', { error });
+    logger.error('Erreur inattendue lors de la récupération de l\'utilisateur.', { error: error instanceof Error ? error.message : String(error) });
     return null;
   }
 }
@@ -135,8 +140,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // --- Récupérer la note moyenne via RPC ---
       // Utilisation de supabaseAnon pour l'appel RPC si la fonction est accessible publiquement
       const { data: averageRatingData, error: averageRatingError } = await supabaseAnon
-        .rpc('get_average_rating', { video_id_param: videoId }) // Assurez-vous d'avoir une fonction SQL 'get_average_rating'
-        .single();
+        .rpc('get_average_rating', { video_id_param: videoId })
+        .single<AverageRatingResult>(); // Correction: typage explicite
 
       if (averageRatingError) {
         // Log l'erreur mais ne bloque pas la réponse si la note moyenne n'est pas critique
@@ -146,7 +151,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       return res.status(200).json({
         userRating: userRatingData?.rating || null,
-        averageRating: averageRatingData?.average_rating || null // Assurez-vous que la fonction SQL retourne 'average_rating'
+        averageRating: averageRatingData?.average_rating || null
       });
 
     } else if (req.method === 'POST') {
@@ -183,7 +188,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .from('ratings') // Assurez-vous que 'ratings' est le nom de votre table
         .upsert(
           { video_id: videoId, user_id: user.id, rating: rating },
-          { onConflict: ['video_id', 'user_id'] } // Spécifie les colonnes pour la mise à jour en cas de conflit
+          { onConflict: 'video_id,user_id' } // Correction: Changez le tableau en chaîne de caractères
         )
         .select('*') // Retourne la note insérée/mise à jour
         .single();
@@ -196,7 +201,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Utilisation de supabaseAnon pour l'appel RPC si la fonction est accessible publiquement
       const { data: newAverageRatingData, error: newAverageRatingError } = await supabaseAnon
         .rpc('get_average_rating', { video_id_param: videoId }) // Réutiliser la fonction SQL
-        .single();
+        .single<AverageRatingResult>(); // Correction: typage explicite
 
       if (newAverageRatingError) {
         logger.error('Erreur lors de la récupération de la nouvelle note moyenne après mise à jour.', { error: newAverageRatingError, videoId });
@@ -211,6 +216,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   } catch (error) {
     // --- 6. Gérer les erreurs inattendues ---
-    return handleError(res, 500, "Erreur interne du serveur lors de l'opération de notation.", { error });
+    return handleError(res, 500, "Erreur interne du serveur lors de l'opération de notation.", { error: error instanceof Error ? error.message : String(error) });
   }
 }
