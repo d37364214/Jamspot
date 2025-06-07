@@ -56,7 +56,7 @@ export default async function handler(
     // 3. Utiliser le client Supabase avec l'Anon Key pour récupérer les données du profil
     // Cette requête respectera les RLS configurées sur votre table 'users'.
     const { data: user, error: dbError } = await supabaseAnon
-      .from<UserFiltered>('users')
+      .from('users')
       .select('id, email, created_at')
       .eq('id', userId)
       .single();
