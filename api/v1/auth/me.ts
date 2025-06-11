@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next'; // Pour le typage
+import type { CustomApiRequest, CustomApiResponse } from '../../../api/types'; // Chemin ajusté
 import { createClient } from '@supabase/supabase-js';
 import logger from '../../../utils/logger';
 
@@ -24,8 +24,8 @@ interface UserFiltered {
 }
 
 export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
+  req: CustomApiRequest, // Type mis à jour ici
+  res: CustomApiResponse // Type mis à jour ici
 ) {
   if (req.method !== 'GET') {
     logger.debug('Received a non-GET request for /api/me', { method: req.method, url: req.url });
