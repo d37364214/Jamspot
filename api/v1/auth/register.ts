@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next'; // Garde pour le typage si vous le trouvez pratique
+import type { CustomApiRequest, CustomApiResponse } from '../../../api/types'; // Chemin ajusté
 import { createClient } from '@supabase/supabase-js';
 import logger from '../../../utils/logger'; // Importe votre logger configuré
 import { z } from 'zod'; // Importe Zod pour une validation plus robuste
@@ -20,7 +20,7 @@ const registerSchema = z.object({
 });
 // -----------------------------------------------------------
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: CustomApiRequest, res: CustomApiResponse) { // Types mis à jour ici
   if (req.method !== 'POST') {
     logger.debug('Received a non-POST request for registration', { method: req.method, url: req.url });
     return res.status(405).json({ error: "Méthode non autorisée" });
