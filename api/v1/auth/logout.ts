@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { CustomApiRequest, CustomApiResponse } from '../../../api/types'; // Chemin ajusté
 import { createClient } from '@supabase/supabase-js';
 import logger from '../../../utils/logger'; // Importe le logger configuré
 
@@ -7,7 +7,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: CustomApiRequest, res: CustomApiResponse) { // Types mis à jour ici
   if (req.method !== 'POST') {
     logger.debug('Received a non-POST request for logout', { method: req.method, url: req.url });
     return res.status(405).json({ error: "Méthode non autorisée" });
