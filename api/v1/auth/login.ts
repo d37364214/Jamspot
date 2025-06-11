@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { CustomApiRequest, CustomApiResponse } from '../../../api/types'; [span_0](start_span)[span_1](start_span)// Chemin ajusté[span_0](end_span)[span_1](end_span)
 import { createClient } from '@supabase/supabase-js';
 import logger from '../../../utils/logger'; // Importe le logger configuré
 import { z } from 'zod'; // Importe Zod
@@ -15,7 +15,7 @@ const loginSchema = z.object({
   password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères."),
 });
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+[span_2](start_span)[span_3](start_span)export default async function handler(req: CustomApiRequest, res: CustomApiResponse) { // Types mis à jour ici[span_2](end_span)[span_3](end_span)
   if (req.method !== 'POST') {
     logger.debug('Received a non-POST request', { method: req.method, url: req.url });
     return res.status(405).json({ error: "Méthode non autorisée" });
