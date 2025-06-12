@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next'; // Utilisé uniquement pour les typages
+import type { CustomApiRequest, CustomApiResponse } from '../../../api/types'; // Chemin ajusté
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import logger from '../../../utils/logger'; // Ajustez le chemin si nécessaire
@@ -39,13 +39,13 @@ const insertTagSchema = z.object({
 /**
  * Utilitaire centralisé de gestion des erreurs.
  * Simplifie l'envoi des réponses d'erreur et la journalisation.
- * @param res L'objet NextApiResponse.
+ * @param res L'objet CustomApiResponse.
  * @param statusCode Le code d'état HTTP à envoyer.
  * @param message Le message d'erreur convivial à l'utilisateur.
  * @param details Les détails de l'erreur interne pour la journalisation.
  */
 function handleError(
-  res: NextApiResponse,
+  res: CustomApiResponse, // Type mis à jour ici
   statusCode: number,
   message: string,
   details?: any
@@ -57,10 +57,10 @@ function handleError(
 /**
  * Récupère l'utilisateur authentifié à partir du jeton JWT fourni dans les en-têtes de la requête.
  * Utilise le client `supabaseServiceRole` pour vérifier le jeton.
- * @param req L'objet NextApiRequest.
+ * @param req L'objet CustomApiRequest.
  * @returns L'objet utilisateur Supabase ou null si non authentifié/invalide.
  */
-async function getCurrentUser(req: NextApiRequest): Promise<any | null> {
+async function getCurrentUser(req: CustomApiRequest): Promise<any | null> { // Type mis à jour ici
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     logger.debug('En-tête d\'autorisation manquant.');
@@ -104,7 +104,7 @@ async function isAdmin(user: any): Promise<boolean> {
 }
 
 // --- Gestionnaire d'API ---
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: CustomApiRequest, res: CustomApiResponse) { // Types mis à jour ici
   try {
     if (req.method === 'GET') {
       const pageQuery = req.query.page;
@@ -198,4 +198,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return handleError(res, 500, "Erreur interne du serveur.", { error });
   }
 }
-
