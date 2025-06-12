@@ -1,55 +1,55 @@
-import type { NextApiRequest, NextApiResponse } from 'next'; // Used for typings only
+import type { CustomApiRequest, CustomApiResponse } from '../../../api/types'; // Chemin ajusté
 import { google, youtube_v3 } from 'googleapis'; // Correction: Ajout de youtube_v3 pour le typage
 import { createClient } from '@supabase/supabase-js'; // Correction: Syntaxe d'importation
 import { z } from 'zod';
-import logger from '../../../utils/logger'; // Adjust path as necessary
+import logger from '../../../utils/logger'; // Ajustez le chemin si nécessaire
 
-// --- Constants for Supabase/PostgreSQL error codes ---
+// --- Constantes pour les codes d'erreur Supabase/PostgreSQL ---
 const SUPABASE_ERROR_CODES = {
   FOREIGN_KEY_VIOLATION: '23503',
   UNIQUE_VIOLATION: '23505',
-  NO_ROWS_FOUND_POSTGREST: 'PGRST116', // Specific to PostgREST/Supabase
+  NO_ROWS_FOUND_POSTGREST: 'PGRST116', // Spécifique à PostgREST/Supabase
 };
 
-// --- YouTube API Client ---
-// Initialize YouTube client with your API Key
+// --- Client API YouTube ---
+// Initialise le client YouTube avec votre clé API
 const youtube = google.youtube({ version: 'v3', auth: process.env.API_KEY });
 
-// --- Supabase Clients ---
-// Client for read operations (GET) that should respect Row Level Security (RLS)
-// Uses a public key (NEXT_PUBLIC_SUPABASE_ANON_KEY)
+// --- Clients Supabase ---
+// Client pour les opérations en lecture (GET) qui doivent respecter la sécurité au niveau des lignes (RLS)
+// Utilise une clé publique (NEXT_PUBLIC_SUPABASE_ANON_KEY)
 const supabaseAnon = createClient(
   process.env.SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// Client for write operations (POST, PUT, DELETE) or operations requiring service role privileges
-// This client bypasses RLS and should be used with caution for critical operations.
+// Client pour les opérations d'écriture (POST, PUT, DELETE) ou les opérations nécessitant des privilèges de rôle de service
+// Ce client contourne le RLS et doit être utilisé avec prudence pour les opérations critiques.
 const supabaseServiceRole = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// --- Zod Schema for validating video data from YouTube API ---
+// --- Schéma Zod pour la validation des données vidéo de l'API YouTube ---
 const videoSchema = z.object({
-  youtube_id: z.string().min(1, "L'ID YouTube est requis.").max(20, "L'ID YouTube est trop long."), // YouTube video IDs are typically 11 chars
+  youtube_id: z.string().min(1, "L'ID YouTube est requis.").max(20, "L'ID YouTube est trop long."), // Les ID de vidéo YouTube font typiquement 11 caractères
   title: z.string().min(1, "Le titre est requis.").max(255, "Le titre est trop long."),
-  description: z.string().max(5000, "La description est trop longue.").nullable().optional(), // Description can be very long, handle null/undefined
-  // Add other fields you might extract and want to validate (e.g., publishedAt, channelTitle)
+  description: z.string().max(5000, "La description est trop longue.").nullable().optional(), // La description peut être très longue, gère null/undefined
+  // Ajoutez d'autres champs que vous pourriez extraire et vouloir valider (par exemple, publishedAt, channelTitle)
 });
 
-// --- Utility Functions ---
+// --- Fonctions utilitaires ---
 
 /**
- * Centralized error handling utility.
- * Simplifies sending error responses and logging.
- * @param res The NextApiResponse object.
- * @param statusCode The HTTP status code to send.
- * @param message The user-friendly error message.
- * @param details Optional internal error details for logging.
+ * Utilitaire centralisé de gestion des erreurs.
+ * Simplifie l'envoi de réponses d'erreur et la journalisation.
+ * @param res L'objet CustomApiResponse.
+ * @param statusCode Le code d'état HTTP à envoyer.
+ * @param message Le message d'erreur convivial pour l'utilisateur.
+ * @param details Détails facultatifs de l'erreur interne pour la journalisation.
  */
 function handleError(
-  res: NextApiResponse,
+  res: CustomApiResponse, // Type mis à jour ici
   statusCode: number,
   message: string,
   details?: any
@@ -59,61 +59,61 @@ function handleError(
 }
 
 /**
- * Retrieves the authenticated user from the JWT token provided in the request headers.
- * Uses the `supabaseServiceRole` client to verify the token.
- * @param req The NextApiRequest object.
- * @returns The Supabase user object or null if not authenticated/invalid.
+ * Récupère l'utilisateur authentifié à partir du jeton JWT fourni dans les en-têtes de la requête.
+ * Utilise le client `supabaseServiceRole` pour vérifier le jeton.
+ * @param req L'objet CustomApiRequest.
+ * @returns L'objet utilisateur Supabase ou null si non authentifié/invalide.
  */
-async function getCurrentUser(req: NextApiRequest): Promise<any | null> {
+async function getCurrentUser(req: CustomApiRequest): Promise<any | null> { // Type mis à jour ici
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    logger.debug('Missing Authorization header for getCurrentUser.');
+    logger.debug('En-tête d\'autorisation manquant pour getCurrentUser.');
     return null;
   }
 
-  const token = authHeader.split(' ')[1]; // Extract Bearer token
+  const token = authHeader.split(' ')[1]; // Extrait le jeton Bearer
   if (!token) {
-    logger.debug('Missing Bearer token for getCurrentUser.');
+    logger.debug('Jeton Bearer manquant pour getCurrentUser.');
     return null;
   }
 
   try {
     const { data: { user }, error } = await supabaseServiceRole.auth.getUser(token);
     if (error || !user) {
-      logger.warn('Error fetching user or user not found during getCurrentUser.', { error });
+      logger.warn('Erreur lors de la récupération de l\'utilisateur ou utilisateur non trouvé pendant getCurrentUser.', { error });
       return null;
     }
     return user;
   } catch (error) {
-      logger.error('Unexpected error while fetching user in getCurrentUser.', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Erreur inattendue lors de la récupération de l\'utilisateur dans getCurrentUser.', { error: error instanceof Error ? error.message : String(error) });
     return null;
   }
 }
 
 /**
- * Checks if the given user has an 'admin' role.
- * Relies on the user object's app_metadata.
- * @param user The Supabase user object.
- * @returns True if the user is an admin, false otherwise.
+ * Vérifie si l'utilisateur donné a un rôle 'admin'.
+ * S'appuie sur les `app_metadata` de l'objet utilisateur.
+ * @param user L'objet utilisateur Supabase.
+ * @returns Vrai si l'utilisateur est un administrateur, faux sinon.
  */
 async function isAdmin(user: any): Promise<boolean> {
-  // Ensure 'admin' role is correctly set in your Supabase user's app_metadata.
+  // Assurez-vous que le rôle 'admin' est correctement défini dans les app_metadata de vos utilisateurs Supabase.
   const userRole = user?.app_metadata?.role;
   const isCurrentUserAdmin = userRole === 'admin';
 
   if (!isCurrentUserAdmin) {
-    logger.debug('isAdmin check: User is not an administrator.', { userId: user?.id, userRole });
+    logger.debug('Vérification isAdmin: L\'utilisateur n\'est pas un administrateur.', { userId: user?.id, userRole });
   }
   return isCurrentUserAdmin;
 }
 
-// --- Main API Handler ---
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+// --- Gestionnaire d'API principal ---
+export default async function handler(req: CustomApiRequest, res: CustomApiResponse) { // Types mis à jour ici
   if (req.method !== 'POST') {
     return handleError(res, 405, "Méthode non autorisée.", { method: req.method });
   }
 
-  // --- 1. Authentication and Authorization ---
+  // --- 1. Authentification et Autorisation ---
   const currentUser = await getCurrentUser(req);
   if (!currentUser) {
     return handleError(res, 401, "Non authentifié: Jeton d'authentification manquant ou invalide.");
@@ -140,13 +140,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let allVideos: z.infer<typeof videoSchema>[] = [];
     let nextPageToken: string | undefined | null = null;
 
-    // --- 2. YouTube API Call with Pagination ---
+    // --- 2. Appel à l'API YouTube avec pagination ---
     do {
       // Correction: Ajout du typage explicite pour playlistItems
       const playlistItems: youtube_v3.Schema$PlaylistItemListResponse = await youtube.playlistItems.list({
         part: ['snippet'],
         playlistId: playlistId,
-        maxResults: 50, // YouTube API max results per request
+        maxResults: 50, // Max results de l'API YouTube par requête
         pageToken: nextPageToken || undefined,
       });
 
@@ -156,15 +156,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           youtube_id: item.snippet?.resourceId?.videoId || '',
           title: item.snippet?.title || '',
           description: item.snippet?.description || null,
-          // Add other fields from snippet if needed
+          // Ajoutez d'autres champs du snippet si nécessaire
         };
 
-        // --- 3. Validate video data from YouTube API ---
+        // --- 3. Valider les données vidéo de l'API YouTube ---
         const validationResult = videoSchema.safeParse(videoData);
         if (validationResult.success) {
           allVideos.push(validationResult.data);
         } else {
-          logger.warn('Invalid video data from YouTube API, skipping video.', { errors: validationResult.error.issues, videoData });
+          logger.warn('Données vidéo invalides de l\'API YouTube, vidéo ignorée.', { errors: validationResult.error.issues, videoData });
         }
       }
 
@@ -174,25 +174,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const importedCount = { success: 0, failed: 0 };
     const importedVideoIds: string[] = [];
 
-    // --- 4. Supabase Upsert Operation ---
+    // --- 4. Opération Upsert Supabase ---
     for (const videoData of allVideos) {
-      // Use upsert to handle potential duplicates (videos already imported)
+      // Utilise upsert pour gérer les doublons potentiels (vidéos déjà importées)
       const { error: upsertError } = await supabaseServiceRole
-        .from('videos') // Ensure 'videos' is your table name
+        .from('videos') // Assurez-vous que 'videos' est le nom de votre table
         .upsert(
           {
             youtube_id: videoData.youtube_id,
             title: videoData.title,
             description: videoData.description,
-            // Add other fields that might be null or have default values in your DB schema
-            category_id: null, // TODO: Adapt this based on your category assignment logic
-            subcategory_id: null, // TODO: Adapt this based on your subcategory assignment logic
+            // Ajoutez d'autres champs qui pourraient être nuls ou avoir des valeurs par défaut dans votre schéma de base de données
+            category_id: null, // TODO: Adapter ceci en fonction de votre logique d'attribution de catégorie
+            subcategory_id: null, // TODO: Adapter ceci en fonction de votre logique d'attribution de sous-catégorie
           },
-          { onConflict: 'youtube_id' } // Specify the unique column to resolve conflicts
+          { onConflict: 'youtube_id' } // Spécifie la colonne unique pour résoudre les conflits
         );
 
       if (upsertError) {
-        logger.error('Error upserting video during import.', { error: upsertError, videoData });
+        logger.error('Erreur lors de l\'upsert d\'une vidéo pendant l\'importation.', { error: upsertError, videoData });
         importedCount.failed++;
       } else {
         importedCount.success++;
@@ -200,15 +200,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    // --- 5. Activity Log ---
-    const userIdForLog = currentUser.id || 'SYSTEM_IMPORT'; // Use actual user ID or a system placeholder
+    // --- 5. Journal d'activité ---
+    const userIdForLog = currentUser.id || 'SYSTEM_IMPORT'; // Utilise l'ID utilisateur réel ou un substitut système
     const { error: activityLogError } = await supabaseServiceRole
-      .from('activity_logs') // Ensure 'activity_logs' is your table name
+      .from('activity_logs') // Assurez-vous que 'activity_logs' est le nom de votre table
       .insert([
         {
           action: "IMPORT_YOUTUBE_PLAYLIST",
           entity_type: "playlist",
-          entity_id: playlistId, // Log the playlist ID
+          entity_id: playlistId, // Journalise l'ID de la playlist
           user_id: userIdForLog,
           details: `Importation de playlist YouTube: ${playlistUrl}. Vidéos importées: ${importedCount.success}, Échecs: ${importedCount.failed}.`,
           timestamp: new Date().toISOString(),
@@ -216,8 +216,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ]);
 
     if (activityLogError) {
-      logger.error('Error creating activity log for YouTube import.', { error: activityLogError, playlistUrl, userId: userIdForLog });
-      // Do not block the main response if activity log fails.
+      logger.error('Erreur lors de la création du journal d\'activité pour l\'importation YouTube.', { error: activityLogError, playlistUrl, userId: userIdForLog });
+      // Ne pas bloquer la réponse principale si le journal d'activité échoue.
     }
 
     return res.status(200).json({
