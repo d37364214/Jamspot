@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next'; // Utilisé uniquement pour les typages
+import type { CustomApiRequest, CustomApiResponse } from '../../../api/types'; // Chemin ajusté
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import logger from '../../../utils/logger'; // Ajustez le chemin si nécessaire
@@ -35,7 +35,7 @@ const updateCategorySchema = z.object({
  * Ceci est un espace réservé ; vous devrez implémenter votre logique réelle de vérification des rôles.
  * Pour Supabase, cela implique généralement d'interroger les métadonnées de l'utilisateur ou une table 'roles'.
  */
-async function isAdmin(req: NextApiRequest): Promise<boolean> {
+async function isAdmin(req: CustomApiRequest): Promise<boolean> { // Type mis à jour ici
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     logger.warn('En-tête d\'autorisation manquant pour la vérification admin');
@@ -77,13 +77,13 @@ async function isAdmin(req: NextApiRequest): Promise<boolean> {
 
 /**
  * Utilitaire centralisé de gestion des erreurs.
- * @param res Objet NextApiResponse.
+ * @param res Objet CustomApiResponse.
  * @param statusCode Code d'état HTTP.
  * @param message Message d'erreur convivial.
  * @param details Objet d'erreur détaillé facultatif pour la journalisation.
  */
 function handleError(
-  res: NextApiResponse,
+  res: CustomApiResponse, // Type mis à jour ici
   statusCode: number,
   message: string,
   details?: any
@@ -93,7 +93,7 @@ function handleError(
 }
 
 // --- Gestionnaire d'API ---
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: CustomApiRequest, res: CustomApiResponse) { // Types mis à jour ici
   // Assurez-vous que l'id est une seule chaîne et analysez-la
   const { id } = req.query;
   const categoryId = typeof id === 'string' ? parseInt(id, 10) : undefined;
