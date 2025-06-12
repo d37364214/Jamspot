@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next'; // Utilisé uniquement pour les typages
+import type { CustomApiRequest, CustomApiResponse } from '../../../api/types'; // Chemin ajusté
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import logger from '../../../utils/logger'; // Ajustez le chemin si nécessaire
@@ -45,10 +45,10 @@ const insertCategorySchema = z.object({
  * Vérifie si l'utilisateur authentifié a un rôle 'admin'.
  * Cette fonction utilise le client de rôle de service pour vérifier le jeton JWT
  * et extraire les métadonnées de l'utilisateur.
- * @param req L'objet NextApiRequest contenant les en-têtes d'autorisation.
+ * @param req L'objet CustomApiRequest contenant les en-têtes d'autorisation.
  * @returns Un objet contenant `isAdmin` (booléen) et `userId` (chaîne de caractères ou null).
  */
-async function isAdmin(req: NextApiRequest): Promise<{ isAdmin: boolean; userId: string | null }> {
+async function isAdmin(req: CustomApiRequest): Promise<{ isAdmin: boolean; userId: string | null }> { // Type mis à jour ici
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     logger.warn('En-tête d\'autorisation manquant pour la vérification admin.');
@@ -93,13 +93,13 @@ async function isAdmin(req: NextApiRequest): Promise<{ isAdmin: boolean; userId:
 /**
  * Utilitaire centralisé de gestion des erreurs.
  * Simplifie le retour d'erreurs et la journalisation.
- * @param res L'objet NextApiResponse.
+ * @param res L'objet CustomApiResponse.
  * @param statusCode Le code d'état HTTP à renvoyer.
  * @param message Le message d'erreur convivial à l'utilisateur.
  * @param details Les détails de l'erreur interne pour la journalisation.
  */
 function handleError(
-  res: NextApiResponse,
+  res: CustomApiResponse, // Type mis à jour ici
   statusCode: number,
   message: string,
   details?: any
@@ -109,7 +109,7 @@ function handleError(
 }
 
 // --- Gestionnaire d'API ---
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: CustomApiRequest, res: CustomApiResponse) { // Types mis à jour ici
   switch (req.method) {
     case 'GET':
       try {
@@ -208,4 +208,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return handleError(res, 405, "Méthode non autorisée.", { method: req.method, url: req.url });
   }
 }
-
